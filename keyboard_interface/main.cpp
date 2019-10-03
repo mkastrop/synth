@@ -5,23 +5,23 @@
 
 // see https://de.pinout.xyz/pinout/wiringpi#
 
-#define OCTAVE_A 27 // orange > gray
-#define OCTAVE_B 25 // yellow > magenta
-#define OCTAVE_C 28 // green  > blue
-#define OCTAVE_D 29 // blue   > green
+#define OCTAVE_A 29 // blue   > green
+#define OCTAVE_B 28 // green  > blue
+#define OCTAVE_C 25 // yellow > magenta
+#define OCTAVE_D 27 // orange > gray
 
-#define KEY_01  1 // brown   > yellow
-#define KEY_02  0 // red     > orange
-#define KEY_03  2 // orange  > red
-#define KEY_04  3 // yellow  > brown
-#define KEY_05  4 // green   > black
-#define KEY_06  5 // blue    > white 
-#define KEY_07  6 // magenta > gray
-#define KEY_08 21 // gray    > magenta
-#define KEY_09 22 // white   > blue
-#define KEY_10 26 // black   > green
-#define KEY_11 23 // brown   > yellow
-#define KEY_12 24 // red     > orange
+#define KEY_01 24 // red     > orange
+#define KEY_02 23 // brown   > yellow
+#define KEY_03 26 // black   > green
+#define KEY_04 22 // white   > blue
+#define KEY_05 21 // gray    > magenta
+#define KEY_06  6 // magenta > gray
+#define KEY_07  5 // blue    > white
+#define KEY_08  4 // green   > black
+#define KEY_09  3 // yellow  > brown
+#define KEY_10  2 // orange  > red
+#define KEY_11  0 // red     > orange
+#define KEY_12  1 // brown   > yellow
 
 int main(void)
 {
@@ -66,6 +66,10 @@ int main(void)
 
 	int keyCode = -1;
 	std::vector<int> keysPressed;
+
+	// The maximum number of simultaneously pressed keys is the total number of
+	// keys on our keyboard, it's 44.
+	keysPressed.reserve(44);
 
 	do
 	{
