@@ -1,7 +1,10 @@
 #include <iostream>
+#include <algorithm>
 #include <vector>
 
 #include <wiringPi.h>
+
+#include "midi_generator.hpp"
 
 // see https://de.pinout.xyz/pinout/wiringpi#
 
@@ -64,12 +67,17 @@ int main(void)
 	pullUpDnControl(KEY_11, PUD_DOWN);
 	pullUpDnControl(KEY_12, PUD_DOWN);
 
-	int keyCode = -1;
-	std::vector<int> keysPressed;
+	std::vector<unsigned char> lastKeysPressed;
+	std::vector<unsigned char> keysPressed;
+	std::vector<unsigned char> keysChanged;
 
 	// The maximum number of simultaneously pressed keys is the total number of
 	// keys on our keyboard, it's 44.
+	lastKeysPressed.reserve(44);
 	keysPressed.reserve(44);
+	keysChanged.reserve(44);
+
+	std::shared_ptr<MidiGenerator> pMidiGenerator = std::make_shared<MidiGenerator>();
 
 	do
 	{
@@ -197,9 +205,34 @@ int main(void)
 
 		digitalWrite(OCTAVE_D, 1);
 
-		for (int i = 0; i < keysPressed.size(); ++i)
-			std::cout << keysPressed.at(i) << ", ";
-	    std::cout << std::endl;
+		// Determine keys that are not longer pressed -> note off
+		keysChanged = std::vector<unsigned char>(44);
+		auto it1 = std::set_difference(
+			lastKeysPressed.begin(), lastKeysPressed.end(),
+			keysPressed.begin(), keysPressed.end(),
+			keysChanged.begin()
+		);
+		keysChanged.resize(it1 - keysChanged.begin());
+
+		for (auto key : keysChanged) {
+			pMidiGenerator->noteOff(key);
+		}
+
+		// Determine keys that are newly  pressed -> not on
+		keysChanged = std::vector<unsigned char>(44);
+		auto it2 = std::set_difference(
+			keysPressed.begin(), keysPressed.end(),
+			lastKeysPressed.begin(), lastKeysPressed.end(),
+			keysChanged.begin()
+		);
+		keysChanged.resize(it2 - keysChanged.begin());
+
+		for (auto key : keysChanged) {
+			pMidiGenerator->noteOn(key);
+		}
+
+		// Keep record of recently pressed keys
+		lastKeysPressed = keysPressed;
 
 		delay(1000 / 128);
 	}
